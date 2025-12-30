@@ -1,7 +1,10 @@
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
+
 import pandas as pd 
 import numpy as np
 
+# Data Preprocessing :
 data = pd.read_csv('data.csv')
 data = data.drop('pdiff',axis = 1)
 data.dropna(inplace=True)
@@ -9,14 +12,15 @@ data.dropna(inplace=True)
 data['pdiff'] = data['pres'] - data['pprev']
 data['month'] = data['month'].str[5:7].astype(int)
 
-# print(data)
-
+# Feature Extraction :
 X = data.drop('pprev', axis=1).iloc[:-1]
-# print (X)
-
 Y = data['tavg'].iloc[1:]
-# print(Y)
 
+# Scaling the features :
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+# Model Training :
 model = LinearRegression()
 model.fit(X, Y)
 weather = pd.DataFrame({
@@ -28,5 +32,8 @@ weather = pd.DataFrame({
     'pres': [1008.5],          # current day's pressure
     'pdiff': [-0.9]            # difference in pressure from previous day
 })
+
+weather = scaler.transform(weather)
+# Making Predictions :
 predictions = model.predict(weather) #29.9
 print(predictions.astype(float))
