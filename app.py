@@ -1,5 +1,6 @@
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
+# from sklearn.ensemble import RandomForestRegressor
 
 import pandas as pd 
 
@@ -22,8 +23,11 @@ params = {
     "daily": [
         "temperature_2m_mean",
         "precipitation_sum",
-        "surface_pressure_mean",
-        "wind_speed_10m_mean"
+        "pressure_msl_mean",
+        "wind_speed_10m_mean",
+    ],
+    "hourly":[
+        "cloud_cover"
     ],
     "past_days": 1,        # yesterday
     "forecast_days": 1,    # today
@@ -32,14 +36,18 @@ params = {
 
 response = requests.get(url, params=params)
 data = response.json()
+# print (data)
+# Calculating average cloud cover from hourly data
+cloud = data["hourly"]["cloud_cover"]
+avg_cloudcover = sum(cloud) / len(cloud)
 
-# Create DataFrame
+# Create DataFrame for model input
 df = pd.DataFrame({
     "date": data["daily"]["time"],
     "avg_temperature": data["daily"]["temperature_2m_mean"],
     "total_precipitation": data["daily"]["precipitation_sum"],
-    "avg_pressure": data["daily"]["surface_pressure_mean"],
-    "avg_wind_speed": data["daily"]["wind_speed_10m_mean"]
+    "avg_pressure": data["daily"]["pressure_msl_mean"],
+    "avg_wind_speed": data["daily"]["wind_speed_10m_mean"]  
 })
 
 print(df)
@@ -50,6 +58,7 @@ prcp = df["total_precipitation"][1]    # current day's precipitation
 wspd = df["avg_wind_speed"][1]         # current day's wind speed
 pres = df["avg_pressure"][1]           # current day's pressure
 pdiff = pres - df["avg_pressure"][0]   # difference in pressure from previous day
+cc = avg_cloudcover                  # average cloud cover
 
 # Data Preprocessing :
 data = pd.read_csv('dataset/data.csv')  # meteostat dataset
@@ -74,7 +83,7 @@ else:
     X = scaler.fit_transform(X)
 
     # Model Training :
-    model = LinearRegression()
+    model = LinearRegression()                                                   # 87% accuracy(0.5 MAE and 0.7 RMSE)
     model.fit(X, Y)
     
     # saving the model :
@@ -90,15 +99,17 @@ weather = pd.DataFrame({
         'prcp': [prcp],                # current day's precipitation
         'wspd': [wspd],                # current day's wind speed
         'pres': [pres],                # current day's pressure
+        'cloudcvr': [cc],              # average cloud cover
         'pdiff': [pdiff]               # difference in pressure from previous day
+        
     })
 
 # Scaling the input features :
 weather = scaler.transform(weather)
 
 # Making Predictions :
-predictions = model.predict(weather) #
-print("Tomorrow's Temperature in Pune :",predictions.astype(float))
+predictions = model.predict(weather) 
+print(f"Tomorrow's Temperature in Pune : {predictions.astype(float)[0]:.2f} °C")
 
 t2 = time.time()
 print(f"Execution Time: {t2 - t1} seconds")

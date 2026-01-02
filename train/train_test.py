@@ -1,12 +1,14 @@
 from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import StandardScaler
 # from sklearn.ensemble import RandomForestRegressor
+# from xgboost import XGBRegressor
+
+from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error , mean_squared_error 
 import pandas as pd 
 import numpy as np
 
 # Data Preprocessing :
-data = pd.read_csv('data.csv')
+data = pd.read_csv('dataset/data.csv')
 data = data.drop('pdiff',axis = 1)
 data.dropna(inplace=True)
  
@@ -30,11 +32,21 @@ Y_train = Y[:split]
 Y_test = Y[split:]
 
 # Model Training :
-model = LinearRegression()                                                 # 86% accuracy
+model = LinearRegression()                                                   # 87% accuracy(0.5 MAE and 0.7 RMSE)
 model.fit(X_train, Y_train)
 weather = X_test
 
-# model = RandomForestRegressor()                                              # 83% accuracy
+# model = RandomForestRegressor()                                              # 82% accuracy(0.5 MAE and 0.7 RMSE)
+# model.fit(X_train, Y_train)
+# weather = X_test
+
+# model = XGBRegressor(                                                          # 85% accuracy (0.5 MAE and 0.7 RMSE)
+#     n_estimators=400,
+#     learning_rate=0.03,
+#     max_depth=3,
+#     subsample=0.9,
+#     colsample_bytree=0.8
+# )
 # model.fit(X_train, Y_train)
 # weather = X_test
 
