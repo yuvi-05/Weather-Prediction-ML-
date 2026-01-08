@@ -76,7 +76,7 @@ data['month'] = data['month'].str[5:7].astype(int)
 
 # Feature Extraction :
 X = data.drop('pprev', axis=1).iloc[:-1]
-Y = data[['tempmin','tavg','tempmax']].iloc[1:]
+Y = data[['tempmin','tavg','tempmax','prcp']].iloc[1:]
 
 # Check if model and scaler already exist
 if os.path.exists('model/weather_model.pkl') and os.path.exists('model/scaler.pkl'):
@@ -118,8 +118,17 @@ weather = scaler.transform(weather)
 
 # Making Predictions :
 predictions = model.predict(weather) 
-predictions_df = pd.DataFrame(predictions,columns =['tempmin','tavg','tempmax'])
+predictions_df = pd.DataFrame(predictions,columns =['tempmin','tavg','tempmax','prcp'])
 
+if (predictions_df['prcp'].astype(float)[0] > 7.5):
+    print("Tomorrow's Weather in Pune : Heavy Rainfall Expected")
+elif (predictions_df['prcp'].astype(float)[0] > 2.5):
+    print("Tomorrow's Weather in Pune : Rain Expected")
+elif (predictions_df['prcp'].astype(float)[0] > 0.5):
+    print("Tomorrow's Weather in Pune : Drizzle Expected")
+else:
+    print("Tomorrow's Weather in Pune : No Rain Expected")
+    
 print(f"Tomorrow's Average Temperature in Pune : {predictions_df['tavg'].astype(float)[0]:.2f} °C")
 print(f"Tomorrow's Max Temperature in Pune : {predictions_df['tempmax'].astype(float)[0]:.2f} °C")
 print(f"Tomorrow's Min Temperature in Pune : {predictions_df['tempmin'].astype(float)[0]:.2f} °C")
