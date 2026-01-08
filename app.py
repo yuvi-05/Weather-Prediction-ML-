@@ -1,5 +1,6 @@
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
+from xgboost import XGBRegressor
 # from sklearn.ensemble import RandomForestRegressor
 
 import pandas as pd 
@@ -66,17 +67,23 @@ pres = df["avg_pressure"][1]           # current day's pressure
 pdiff = pres - df["avg_pressure"][0]   # difference in pressure from previous day
 cc = avg_cloudcover                  # average cloud cover
 
+
 # Data Preprocessing :
 data = pd.read_csv('dataset/data.csv')  # meteostat dataset
 data = data.drop('pdiff',axis = 1)
 data.dropna(inplace=True)
- 
+
 data['pdiff'] = data['pres'] - data['pprev']
-data['month'] = data['month'].str[5:7].astype(int)
+data['month'] = data['month'].str[3:5].astype(int)
+
 
 # Feature Extraction :
 X = data.drop('pprev', axis=1).iloc[:-1]
-Y = data[['tempmin','tavg','tempmax','prcp']].iloc[1:]
+Y = data[['tempmin','tavg','tempmax']].iloc[1:]
+R_Y = data[['prcp']].iloc[1:]
+
+
+
 
 # Check if model and scaler already exist
 if os.path.exists('model/weather_model.pkl') and os.path.exists('model/scaler.pkl'):
@@ -113,18 +120,36 @@ weather = pd.DataFrame({
         
     })
 
+if os.path.exists('model/rainfall_model.pkl'):
+    R_model = joblib.load('model/rainfall_model.pkl')
+else:
+    R_model = XGBRegressor(                                                         
+        n_estimators=400,
+        learning_rate=0.03,
+        max_depth=3,
+        subsample=0.9,
+        colsample_bytree=0.8
+    )
+
+    R_model.fit(X, R_Y)
+
+    joblib.dump(R_model, 'model/rainfall_model.pkl')
+
 # Scaling the input features :
 weather = scaler.transform(weather)
 
 # Making Predictions :
 predictions = model.predict(weather) 
-predictions_df = pd.DataFrame(predictions,columns =['tempmin','tavg','tempmax','prcp'])
+R_predictions = R_model.predict(weather)
 
-if (predictions_df['prcp'].astype(float)[0] > 7.5):
+predictions_df = pd.DataFrame(predictions,columns =['tempmin','tavg','tempmax'])
+R_predictions_df = pd.DataFrame(R_predictions,columns =['prcp'])
+
+if (R_predictions_df['prcp'].astype(float)[0] > 7.5):
     print("Tomorrow's Weather in Pune : Heavy Rainfall Expected")
-elif (predictions_df['prcp'].astype(float)[0] > 2.5):
+elif (R_predictions_df['prcp'].astype(float)[0] > 2.5):
     print("Tomorrow's Weather in Pune : Rain Expected")
-elif (predictions_df['prcp'].astype(float)[0] > 0.5):
+elif (R_predictions_df['prcp'].astype(float)[0] > 0.5):
     print("Tomorrow's Weather in Pune : Drizzle Expected")
 else:
     print("Tomorrow's Weather in Pune : No Rain Expected")
