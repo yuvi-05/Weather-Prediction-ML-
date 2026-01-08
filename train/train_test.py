@@ -18,7 +18,7 @@ data['month'] = data['month'].str[5:7].astype(int)
 
 # Feature Extraction :
 X = data.drop('pprev', axis=1).iloc[:-1]
-Y = data['tavg'].iloc[1:]
+Y = data[['tempmin','tavg','tempmax']].iloc[1:]
 
 # Scaling the features :
 scaler = StandardScaler()
@@ -32,7 +32,7 @@ Y_train = Y[:split]
 Y_test = Y[split:]
 
 # Model Training :
-model = LinearRegression()                                                   # 87% accuracy(0.5 MAE and 0.7 RMSE)
+model = LinearRegression()                                                   # 86% accuracy(0.7 MAE and 1 RMSE)
 model.fit(X_train, Y_train)
 weather = X_test
 
@@ -52,18 +52,21 @@ weather = X_test
 
 # testing model accuracy :
 predictions = model.predict(weather) 
+predictions_df = pd.DataFrame(predictions,columns =['tempmin','tavg','tempmax'])
 
 predicted = []
 actual = []
 correct_prediction = 0
 
-for temp in predictions :
-    predicted.append(temp)
-for temp in Y_test:
+for temp in predictions_df['tavg'] :
+    predicted.append(float(temp))
+    
+for temp in Y_test['tavg'] :
     actual.append(temp)
 
 print(actual)
 print([f"{x:.1f}" for x in predicted])
+# print(predicted)
 
 for i in range(len(predicted)):
     if (predicted[i]-actual[i]<=1) and (predicted[i]-actual[i]>=-1) :

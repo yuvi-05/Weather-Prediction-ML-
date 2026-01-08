@@ -25,6 +25,8 @@ params = {
         "precipitation_sum",
         "pressure_msl_mean",
         "wind_speed_10m_mean",
+        "temperature_2m_min",
+        "temperature_2m_max"
     ],
     "hourly":[
         "cloud_cover"
@@ -47,12 +49,16 @@ df = pd.DataFrame({
     "avg_temperature": data["daily"]["temperature_2m_mean"],
     "total_precipitation": data["daily"]["precipitation_sum"],
     "avg_pressure": data["daily"]["pressure_msl_mean"],
-    "avg_wind_speed": data["daily"]["wind_speed_10m_mean"]  
+    "avg_wind_speed": data["daily"]["wind_speed_10m_mean"],
+    "temp_min": data["daily"]["temperature_2m_min"],
+    "temp_max": data["daily"]["temperature_2m_max"]
 })
 
 print(df)
 month = df["date"][1][5:7]             # current month
 tprev = df["avg_temperature"][0]       # previous day's average temperature
+tempmin = df["temp_min"][1]              # current day's minimum temperature
+tempmax = df["temp_max"][1]              # current day's maximum temperature
 tavg = df["avg_temperature"][1]        # current day's average temperature
 prcp = df["total_precipitation"][1]    # current day's precipitation
 wspd = df["avg_wind_speed"][1]         # current day's wind speed
@@ -70,8 +76,9 @@ data['month'] = data['month'].str[5:7].astype(int)
 
 # Feature Extraction :
 X = data.drop('pprev', axis=1).iloc[:-1]
-Y = data['tavg'].iloc[1:]
+Y = data[['tempmin','tavg','tempmax']].iloc[1:]
 
+# Check if model and scaler already exist
 if os.path.exists('model/weather_model.pkl') and os.path.exists('model/scaler.pkl'):
     # Loading the model and scaler :
     model = joblib.load('model/weather_model.pkl')
@@ -96,6 +103,8 @@ weather = pd.DataFrame({
         'month': [month],              # current month
         'tprev': [tprev],              # previous day's average temperature
         'tavg': [tavg],                # current day's average temperature
+        'tempmax': [tempmax],            # current day's maximum temperature
+        'tempmin': [tempmin],            # current day's minimum temperature
         'prcp': [prcp],                # current day's precipitation
         'wspd': [wspd],                # current day's wind speed
         'pres': [pres],                # current day's pressure
@@ -109,7 +118,10 @@ weather = scaler.transform(weather)
 
 # Making Predictions :
 predictions = model.predict(weather) 
-print(f"Tomorrow's Temperature in Pune : {predictions.astype(float)[0]:.2f} °C")
+predictions_df = pd.DataFrame(predictions,columns =['tempmin','tavg','tempmax'])
 
+print(f"Tomorrow's Average Temperature in Pune : {predictions_df['tavg'].astype(float)[0]:.2f} °C")
+print(f"Tomorrow's Max Temperature in Pune : {predictions_df['tempmax'].astype(float)[0]:.2f} °C")
+print(f"Tomorrow's Min Temperature in Pune : {predictions_df['tempmin'].astype(float)[0]:.2f} °C")
 t2 = time.time()
 print(f"Execution Time: {t2 - t1} seconds")
