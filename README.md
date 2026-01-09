@@ -125,7 +125,7 @@ weather-prediction/
 
 Clone the repository
 
-git clone https://github.com/your-username/weather-prediction.git
+git clone https://github.com/yuvi-05/weather-prediction.git
 
 
 Install dependencies
