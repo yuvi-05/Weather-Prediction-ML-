@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Prediction App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-cloud-sun"></i> Weather Prediction</h1>
+            <p class="subtitle">AI-Powered Weather Forecasting with 90 % accuracy</p>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- Current Weather Section -->
+            <section class="current-weather">
+                <h2><i class="fas fa-sun"></i> Current Weather</h2>
+                <div class="weather-grid">
+                    <div class="weather-card">
+                        <div class="card-icon">
+                            <i class="fas fa-thermometer-half"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Min Temperature</h3>
+                            <p class="value" id="current-min-temp">--</p>
+                            <span class="unit">°C</span>
+                        </div>
+                    </div>
+                    
+                    <div class="weather-card">
+                        <div class="card-icon">
+                            <i class="fas fa-temperature-high"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Average Temperature</h3>
+                            <p class="value" id="current-avg-temp">--</p>
+                            <span class="unit">°C</span>
+                        </div>
+                    </div>
+
+                    <div class="weather-card">
+                        <div class="card-icon">
+                            <i class="fas fa-thermometer-full"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Max Temperature</h3>
+                            <p class="value" id="current-max-temp">--</p>
+                            <span class="unit">°C</span>
+                        </div>
+                    </div>
+
+                    
+
+                    <div class="weather-card">
+                        <div class="card-icon">
+                            <i class="fas fa-wind"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Wind Speed</h3>
+                            <p class="value" id="current-wind">--</p>
+                            <span class="unit">km/h</span>
+                        </div>
+                    </div>
+
+                    <div class="weather-card">
+                        <div class="card-icon">
+                            <i class="fas fa-compress-arrows-alt"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Atmospheric Pressure</h3>
+                            <p class="value" id="current-pressure">--</p>
+                            <span class="unit">hPa</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Prediction Section -->
+            <section class="prediction-section">
+                <h2><i class="fas fa-crystal-ball"></i> Tomorrow's Weather Prediction</h2>
+                <div class="prediction-container">
+                    <div class="prediction-main">
+                        <div class="prediction-card temperature-prediction">
+                            <h3><i class="fas fa-calendar-day"></i> Temperature Forecast</h3>
+                            <div class="prediction-grid">
+                                <div class="pred-item">
+                                    <div class="pred-label">Minimum</div>
+                                    <div class="pred-value">
+                                        <span id="pred-min-temp">--</span>
+                                        <span class="unit">°C</span>
+                                    </div>
+                                </div>
+                                <div class="pred-item">
+                                    <div class="pred-label">Average</div>
+                                    <div class="pred-value">
+                                        <span id="pred-avg-temp">--</span>
+                                        <span class="unit">°C</span>
+                                    </div>
+                                </div>
+                                <div class="pred-item">
+                                    <div class="pred-label">Maximum</div>
+                                    <div class="pred-value">
+                                        <span id="pred-max-temp">--</span>
+                                        <span class="unit">°C</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="prediction-card rainfall-prediction">
+                            <h3><i class="fas fa-cloud-rain"></i> Rainfall Forecast</h3>
+                            <div class="rainfall-content">
+                                <div class="rainfall-value">
+                                    <span id="pred-rainfall">--</span>
+                                    <span class="unit">mm</span>
+                                </div>
+                                <div class="rainfall-status" id="rainfall-status">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="loading-overlay" id="loading">
+            <div class="spinner"></div>
+            <p>Fetching weather data...</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", ()=>{
+            const loadingOverlay = document.getElementById('loading');
+            const currentMinTemp = document.getElementById('current-min-temp');
+            const currentMaxTemp = document.getElementById('current-max-temp');
+            const currentAvgTemp = document.getElementById('current-avg-temp');
+            const currentWind = document.getElementById('current-wind');
+            const currentPressure = document.getElementById('current-pressure');
+
+            const predMinTemp = document.getElementById('pred-min-temp');
+            const predAvgTemp = document.getElementById('pred-avg-temp');
+            const predMaxTemp = document.getElementById('pred-max-temp');
+            const predRainfall = document.getElementById('pred-rainfall');
+            const rainfallStatus = document.getElementById('rainfall-status');
+
+            fetch('/predict')
+                .then(response => response.json())
+                .then(data => {
+                    // Update Current Weather
+                    currentMinTemp.textContent = data.currentmin;
+                    currentMaxTemp.textContent = data.currentmax;
+                    currentAvgTemp.textContent = data.currenttemp;
+                    currentWind.textContent = data.windspd;
+                    currentPressure.textContent = data.pressure;
+
+                    // Update Predictions
+                    predMinTemp.textContent = data.tempmin ;
+                    predAvgTemp.textContent = data.tavg;
+                    predMaxTemp.textContent = data.tempmax ;
+                    predRainfall.textContent = data.prcp;
+
+                    // Update Rainfall Status
+                    rainfallStatus.innerHTML = `<i class="fas fa-info-circle"></i> <span>${data.msg}</span>`;
+
+                    // Hide Loading Overlay
+                    loadingOverlay.style.display = 'none';
+                })
+            
+
+        })
+    </script>
+</body>
+</html>
+

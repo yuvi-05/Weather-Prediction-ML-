@@ -1,6 +1,7 @@
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 from xgboost import XGBRegressor
+from flask import Flask, render_template, request,jsonify
 # from sklearn.ensemble import RandomForestRegressor
 
 import pandas as pd 
@@ -9,6 +10,13 @@ import joblib
 import os
 import time
 import requests
+
+
+app = Flask(__name__)
+@app.route("/",methods=["GET","POST"])
+def home():
+    return render_template("index.html")
+
 
 t1 = time.time()
 
@@ -58,8 +66,10 @@ df = pd.DataFrame({
 print(df)
 month = df["date"][1][5:7]             # current month
 tprev = df["avg_temperature"][0]       # previous day's average temperature
-tempmin = df["temp_min"][1]              # current day's minimum temperature
-tempmax = df["temp_max"][1]              # current day's maximum temperature
+
+tempmin = df["temp_min"][1]+1              # current day's minimum temperature      # adjusting error of 2 degree
+tempmax = df["temp_max"][1]-1              # current day's maximum temperature
+
 tavg = df["avg_temperature"][1]        # current day's average temperature
 prcp = df["total_precipitation"][1]    # current day's precipitation
 wspd = df["avg_wind_speed"][1]         # current day's wind speed
@@ -139,6 +149,7 @@ else:
 weather = scaler.transform(weather)
 
 # Making Predictions :
+msg =''
 predictions = model.predict(weather) 
 R_predictions = R_model.predict(weather)
 
@@ -147,15 +158,42 @@ R_predictions_df = pd.DataFrame(R_predictions,columns =['prcp'])
 
 if (R_predictions_df['prcp'].astype(float)[0] > 7.5):
     print("Tomorrow's Weather in Pune : Heavy Rainfall Expected")
+    msg = "Heavy Rainfall Expected , Stay Indoor !"
 elif (R_predictions_df['prcp'].astype(float)[0] > 2.5):
     print("Tomorrow's Weather in Pune : Rain Expected")
+    msg = "Rain Expected , Carry an Umbrella !"
 elif (R_predictions_df['prcp'].astype(float)[0] > 0.5):
     print("Tomorrow's Weather in Pune : Drizzle Expected")
+    msg = "Drizzle Expected , Wear a Raincoat or just enjoy the drizzle !"
 else:
     print("Tomorrow's Weather in Pune : No Rain Expected")
+    msg = "No Rain Expected , Have a Sunny Day !"
     
 print(f"Tomorrow's Average Temperature in Pune : {predictions_df['tavg'].astype(float)[0]:.2f} °C")
 print(f"Tomorrow's Max Temperature in Pune : {predictions_df['tempmax'].astype(float)[0]:.2f} °C")
 print(f"Tomorrow's Min Temperature in Pune : {predictions_df['tempmin'].astype(float)[0]:.2f} °C")
 t2 = time.time()
 print(f"Execution Time: {t2 - t1} seconds")
+
+predictions_df['tempmin'] = predictions_df['tempmin']+1               # open-meteo provides error of 2 degree in min and max temp
+predictions_df['tempmax'] = predictions_df['tempmax']-1
+
+@app.route("/predict", methods=["GET"])
+def predict():
+    data = {
+        'currenttemp': f"{tavg:.1f}",
+        'currentmin': f"{tempmin:.1f}",
+        'currentmax': f"{tempmax:.1f}",
+        'windspd': f"{wspd:.1f}",
+        'pressure': f"{pres:.2f}",
+
+        'tempmin': f"{predictions_df['tempmin'].astype(float)[0]:.1f}",
+        'tavg': f"{predictions_df['tavg'].astype(float)[0]:.1f}",
+        'tempmax': f"{predictions_df['tempmax'].astype(float)[0]:.1f}",
+        'prcp': f"{R_predictions_df['prcp'].astype(float)[0]:.1f}",
+        'msg': msg
+    }
+    return jsonify(data)
+
+if __name__ == "__main__":
+    app.run(debug=True)

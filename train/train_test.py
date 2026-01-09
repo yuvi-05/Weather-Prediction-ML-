@@ -59,7 +59,7 @@ predicted = []
 actual = []
 correct_prediction = 0
 
-for temp in predictions_df['prcp'] :
+for temp in predictions_df['rcp'] :
     predicted.append(float(temp))
     
 for temp in Y_test['prcp'] :
