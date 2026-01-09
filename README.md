@@ -11,47 +11,83 @@ The goal of this project is to demonstrate how basic ML techniques can be applie
 🚀 Features
 
 Predicts next day average temperature
+
 Predicts next day rainfall
+
 Uses historical + current day weather data
+
 Implements multiple ML models for comparison
+
 Simple and beginner-friendly implementation
 
 🧠 Machine Learning Models Used
+
 Linear Regression – Baseline model for temperature prediction
+
 XGBoost Regressor – Advanced model for better accuracy and non-linear relationships
 
 📊 Dataset & Data Source
+
 Weather data is fetched using a free weather API that provides:
+
 Average Temperature
+
 Precipitation (Rainfall)
+
 Atmospheric Pressure
+
 Wind Speed
+
 The model uses:
+
 Previous day weather data
+
 Current day weather data
+
 to predict next day values.
 
 ⚙️ Tech Stack
+
 Programming Language: Python
+
 Libraries Used:
+
 NumPy
+
 Pandas
+
+Matplotlib
+
 Scikit-learn
+
 XGBoost
+
 Requests (for API calls)
 
 🏗️ Project Workflow
+
 Data Collection
+
 Fetch weather data using API
+
 Data Preprocessing
+
 Handling missing values
+
 Feature selection
+
 Data formatting
+
 Model Training
+
 Train ML models on historical data
+
 Prediction
+
 Predict next day temperature & rainfall
+
 Evaluation
+
 Compare actual vs predicted values
 
 📂 Project Structure
@@ -72,9 +108,19 @@ weather-prediction/
 └── main.py
 
 ▶️ How to Run the Project
+
 Clone the repository
+
 git clone https://github.com/your-username/weather-prediction.git
+
+
 Install dependencies
+
 pip install -r requirements.txt
+
+
+Run the project
+
+python main.py
 Run the project
 python main.py
