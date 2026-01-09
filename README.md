@@ -93,19 +93,33 @@ Compare actual vs predicted values
 📂 Project Structure
 weather-prediction/
 │
+
 ├── data/
+
 │   └── weather_data.csv
+
 │
+
 ├── train/
+
 │   ├── train_test.py
+
 │   └── model_training.py
+
 │
+
 ├── models/
+
 │   └── saved_models.pkl
+
 │
+
 ├── requirements.txt
+
 ├── README.md
+
 └── main.py
+
 
 ▶️ How to Run the Project
 
@@ -121,6 +135,5 @@ pip install -r requirements.txt
 
 Run the project
 
-python main.py
-Run the project
+
 python main.py
